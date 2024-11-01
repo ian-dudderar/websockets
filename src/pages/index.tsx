@@ -10,8 +10,8 @@ const socket = io();
 
 export default function Home() {
   const [isConnected, setIsConnected] = useState(false);
-  const [transport, setTransport] = useState("N/A");
   const [time, setTime] = useState("N/A");
+  const [message, setMessage] = useState("N/A");
 
   useEffect(() => {
     // if (socket.connected) {
@@ -20,11 +20,7 @@ export default function Home() {
 
     function onConnect() {
       setIsConnected(true);
-      setTransport(socket.io.engine.transport.name);
 
-      socket.io.engine.on("upgrade", (transport) => {
-        setTransport(transport.name);
-      });
       console.log("connected");
 
       socket.emit("hello", "world");
@@ -32,14 +28,16 @@ export default function Home() {
 
     function onDisconnect() {
       setIsConnected(false);
-      setTransport("N/A");
       console.log("disconnected");
     }
 
     socket.on("connect", onConnect);
 
+    socket.on("update", (arg) => {
+      console.log("updatE: ");
+      setMessage(arg);
+    });
     socket.on("time", (arg) => {
-      console.log(arg);
       setTime(arg);
     });
     socket.on("disconnect", onDisconnect);
@@ -50,10 +48,16 @@ export default function Home() {
     };
   }, []);
 
+  function onClick() {
+    fetch("/api/test");
+  }
+
   return (
     <div>
       <p>Status: {isConnected ? "connected" : "disconnected"}</p>
       <p>Time: {time}</p>
+      <p>Message: {message}</p>
+      <button onClick={onClick}>click me</button>
     </div>
   );
 }
